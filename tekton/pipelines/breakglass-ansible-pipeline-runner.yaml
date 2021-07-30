@@ -1,0 +1,72 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: write-alert-file
+spec:
+  params:
+    - description: JSON body of alert
+      name: alert
+      type: string
+  steps:
+    - image: centos
+      name: write-alert
+      resources: {}
+      script: |
+        #!/usr/bin/env bash
+        echo "$(params.alert)" > /runner-dir/alert.json
+  workspaces:
+    - description: |
+        The folder containing deployment files
+      mountPath: /runner-dir
+      name: runner-dir
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: breakglass-ansible-pipeline-runner
+spec:
+  description: Run playbook to check breakglass annotation
+  params:
+    - description: Alert body
+      name: alert
+      type: string
+  tasks:
+    - name: clone-playbooks
+      taskRef:
+        kind: Task
+        name: git-clone
+      params:
+        url: "https://github.com/neilcar/break-glass-trigger.git"
+        revision: main
+      workspaces:
+        - name: output
+          workspace: files
+      runAfter:
+        - clone-playbooks
+    - name: write-alert
+      params:
+        - name: alert
+          value: $(params.alert)
+      taskRef:
+        kind: Task
+        name: write-alert-file
+      workspaces:
+        - name: runner-dir
+          workspace: files
+    - name: breakglass-ansible-runner
+      params:
+        - name: project-dir
+          value: playbooks
+        - name: args
+          value: '-p test.yaml --extra-vars "@$(workspaces.runner-dir.path)/alert.json'
+      runAfter:
+        - write-alert
+      taskRef:
+        kind: Task
+        name: ansible-runner
+      workspaces:
+        - name: runner-dir
+          workspace: files
+  workspaces:
+    - name: files
