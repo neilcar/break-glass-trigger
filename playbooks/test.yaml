@@ -16,7 +16,7 @@
     - name: Resolve Alert
       uri:
         url: "https://{{ acs_endpoint }}/v1/alerts/{{ alert_id }}/resolve"
-        body: '{"id":"{{ alert_id }}","whitelist":"false","addToBaseline":"false"}'
+        body: '{"id":"{{ alert_id }}","whitelist":false,"addToBaseline":false}'
         method: PATCH
         headers:
           Content-Type: "application/json"
