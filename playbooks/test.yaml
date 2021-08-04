@@ -2,7 +2,7 @@
   connection: local
   tasks:
     - name: Check existence of ticket
-      community.general.jira:
+      jira:
         uri: '{{ jira_uri }}'
         username: '{{ jira_user }}'
         password: '{{ jira_pass }}'
