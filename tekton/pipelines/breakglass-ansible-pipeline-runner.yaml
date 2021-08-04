@@ -31,7 +31,7 @@ spec:
         - name: ROX_ENDPOINT
           valueFrom:
             secretKeyRef:
-              key: endpoint
+              key: central_endpoint
               name: acs-access-token
         - name: ROX_API_TOKEN
           valueFrom:
