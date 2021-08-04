@@ -13,3 +13,11 @@
     - name: Show issue
       debug:
         var: issue
+    - name: Resolve Alert
+      debug:
+        msg: resolved!
+      when: 
+        - issue.issue.meta.fields.issueype.name == "Exception"
+        - issue.issue.meta.status.name == "In Progress"
+
+         
