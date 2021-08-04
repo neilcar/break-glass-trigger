@@ -1,9 +1,15 @@
 - hosts: localhost
   connection: local
   tasks:
-    - name: Echo vars
-      debug: 
-        msg: |
-          Module Variables ("vars"):
-          --------------------------------
-          {{ vars | to_nice_json }} 
+    - name: Check existence of ticket
+      community.general.jira:
+        uri: '{{ jira_uri }}'
+        username: '{{ jira_user }}'
+        password: '{{ jira_pass }}'
+        project: '{{ break_glass_annotation.split("-)[0] | uppser'
+        operation: fetch
+        issue: '{{ break_glass_annotation }}'
+      register: issue
+    - name: Show issue
+      debug:
+        var: issue

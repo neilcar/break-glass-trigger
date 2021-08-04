@@ -5,16 +5,63 @@ metadata:
   name: write-alert-file
 spec:
   params:
-    - description: JSON body of alert
-      name: alert
+    - description: Alert Id
+      name: alertId
       type: string
+    - description: Break Glass Annotation
+      name: break-glass-annotation
+      type: string
+  env:
+    - name: JIRA_URI
+      valueFrom:
+        secretKeyRef:
+          name: jira-api-token
+          key: jira-uri
+    - name: JIRA_USER
+      valueFrom:
+        secretKeyRef:
+          name: jira-api-token
+          key: jira-user
+    - name: JIRA_PASS
+      valueFrom:
+        secretKeyRef:
+          name: jira-api-token
+          key: jira-token
   steps:
     - image: centos
       name: write-alert
       resources: {}
       script: |
         #!/usr/bin/env bash
-        echo "$(params.alert)" > /runner-dir/alert.json
+        mkdir /runner-dir/playbooks/env
+        cat <<EOF > /runner-dir/playbooks/env/extravars
+        {
+          alert_id: "$(params.alertId)".
+          break_glass_annotation: "$(params.break-glass-annotation)",
+          jira_uri: "$(JIRU_URI)",
+          jira_user: "$(JIRA_USER)",
+          jira_pass: "$(JIRA_PASS)"
+        }
+        ---
+        EOF
+  workspaces:
+    - description: |
+        The folder containing deployment files
+      mountPath: /runner-dir
+      name: runner-dir
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: debug
+spec:
+  steps:
+    - image: centos
+      name: debug
+      resources: {}
+      script: |
+        #!/usr/bin/env bash
+        ls -Rla /runner-dir
   workspaces:
     - description: |
         The folder containing deployment files
@@ -28,8 +75,11 @@ metadata:
 spec:
   description: Run playbook to check breakglass annotation
   params:
-    - description: Alert body
-      name: alert
+    - description: Alert Id
+      name: alertId
+      type: string
+    - description: Break Glass Annotation
+      name: break-glass-annotation
       type: string
   tasks:
     - name: clone-playbooks
@@ -37,29 +87,43 @@ spec:
         kind: Task
         name: git-clone
       params:
-        url: "https://github.com/neilcar/break-glass-trigger.git"
-        revision: main
+        - name: url
+          value: "https://github.com/neilcar/break-glass-trigger.git"
+        - name: revision
+          value: main
       workspaces:
         - name: output
           workspace: files
-      runAfter:
-        - clone-playbooks
     - name: write-alert
       params:
-        - name: alert
-          value: $(params.alert)
+        - name: alertId
+          value: $(params.alertId)
+        - name: break-glass-annotation
+          value: $(params.break-glass-annotation)
+      runAfter:
+        - clone-playbooks
       taskRef:
         kind: Task
         name: write-alert-file
       workspaces:
         - name: runner-dir
           workspace: files
+    - name: debug
+      runAfter:
+        - write-alert
+      taskRef:
+        kind: Task
+        name: debug
+      workspaces:
+        - name: runner-dir
+          workspace: files  
     - name: breakglass-ansible-runner
       params:
         - name: project-dir
           value: playbooks
         - name: args
-          value: '-p test.yaml --extra-vars "@$(workspaces.runner-dir.path)/alert.json'
+          value: 
+            - '-p test.yaml' 
       runAfter:
         - write-alert
       taskRef:

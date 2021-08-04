@@ -1,9 +1,0 @@
-- hosts: localhost
-  connection: local
-  tasks:
-    - name: Echo vars
-      debug: 
-        msg: |
-          Module Variables ("vars"):
-          --------------------------------
-          {{ vars | to_nice_json }} 
