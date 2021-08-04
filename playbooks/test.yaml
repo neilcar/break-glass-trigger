@@ -6,7 +6,7 @@
         uri: '{{ jira_uri }}'
         username: '{{ jira_user }}'
         password: '{{ jira_pass }}'
-        project: '{{ break_glass_annotation.split("-)[0] | uppser'
+        project: '{{ break_glass_annotation.split("-")[0] | upper'
         operation: fetch
         issue: '{{ break_glass_annotation }}'
       register: issue
