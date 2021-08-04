@@ -11,24 +11,34 @@ spec:
     - description: Break Glass Annotation
       name: break-glass-annotation
       type: string
-  env:
-    - name: JIRA_URI
-      valueFrom:
-        secretKeyRef:
-          name: jira-api-token
-          key: jira-uri
-    - name: JIRA_USER
-      valueFrom:
-        secretKeyRef:
-          name: jira-api-token
-          key: jira-user
-    - name: JIRA_PASS
-      valueFrom:
-        secretKeyRef:
-          name: jira-api-token
-          key: jira-token
   steps:
-    - image: centos
+    - env:
+        - name: JIRA_ADDR
+          valueFrom:
+            secretKeyRef:
+              key: uri
+              name: jira-api-token
+        - name: JIRA_USER
+          valueFrom:
+            secretKeyRef:
+              key: user
+              name: jira-api-token
+        - name: JIRA_PASS
+          valueFrom:
+            secretKeyRef:
+              key: token
+              name: jira-api-token
+        - name: ROX_ENDPOINT
+          valueFrom:
+            secretKeyRef:
+              key: endpoint
+              name: acs-access-token
+        - name: ROX_API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              key: token
+              name: acs-access-token              
+      image: centos
       name: write-alert
       resources: {}
       script: |
@@ -36,13 +46,14 @@ spec:
         mkdir /runner-dir/playbooks/env
         cat <<EOF > /runner-dir/playbooks/env/extravars
         {
-          alert_id: "$(params.alertId)".
-          break_glass_annotation: "$(params.break-glass-annotation)",
-          jira_uri: "$(JIRU_URI)",
-          jira_user: "$(JIRA_USER)",
-          jira_pass: "$(JIRA_PASS)"
+          "alert_id": "$(params.alertId)",
+          "break_glass_annotation": "$(params.break-glass-annotation)",
+          "jira_uri": "${JIRA_ADDR}",
+          "jira_user": "${JIRA_USER}",
+          "jira_pass": "${JIRA_PASS}",
+          "acs_endpoint": "${ROX_ENDPOINT}",
+          "acs_api_token": "${ROX_API_TOKEN}"
         }
-        ---
         EOF
   workspaces:
     - description: |

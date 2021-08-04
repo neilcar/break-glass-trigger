@@ -12,10 +12,18 @@
       register: issue
     - name: Show issue
       debug:
-        var: issue
+        msg: "{{ issue }}"
     - name: Resolve Alert
-      debug:
-        msg: resolved!
+      uri:
+        url: "https://{{ acs_ednpoint }}/v1/apitokens/generate"
+        body: '{"id":"{{ alert_id }}","whitelist":"false","addToBaseline":"false"}'
+        method: PATCH
+        headers:
+          Content-Type: "application/json"
+          Authorization: "Bearer {{ acs_api_token }}"
+        body_format: json
+        force_basic_auth: true
+        validate_certs: no
       when: 
         - issue.meta.fields.issuetype.name == "Exception"
         - issue.meta.fields.status.name == "In Progress"
