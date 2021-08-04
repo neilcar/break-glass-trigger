@@ -17,7 +17,7 @@
       debug:
         msg: resolved!
       when: 
-        - issue.issue.meta.fields.issueype.name == "Exception"
-        - issue.issue.meta.status.name == "In Progress"
+        - issue.meta.fields.issueype.name == "Exception"
+        - issue.meta.fields.status.name == "In Progress"
 
          
