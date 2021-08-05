@@ -53,7 +53,7 @@
       when: ticket_valid == false
         
     - name: Create an issue for unauthorized deployment
-      community.general.jira:
+      jira:
         uri: '{{ server }}'
         username: '{{ user }}'
         password: '{{ pass }}'
