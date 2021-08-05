@@ -11,6 +11,9 @@ spec:
     - description: Break Glass Annotation
       name: break-glass-annotation
       type: string
+    - description: Alert body
+      name: alert-body
+      type: string    
   steps:
     - env:
         - name: JIRA_ADDR
@@ -48,6 +51,7 @@ spec:
         {
           "alert_id": "$(params.alertId)",
           "break_glass_annotation": "$(params.break-glass-annotation)",
+          "alert_body": "$(params.alert-body)"
           "jira_uri": "${JIRA_ADDR}",
           "jira_user": "${JIRA_USER}",
           "jira_pass": "${JIRA_PASS}",
@@ -92,6 +96,9 @@ spec:
     - description: Break Glass Annotation
       name: break-glass-annotation
       type: string
+    - description: Alert Body
+      name: alert-body
+      type: string
   tasks:
     - name: clone-playbooks
       taskRef:
@@ -111,6 +118,8 @@ spec:
           value: $(params.alertId)
         - name: break-glass-annotation
           value: $(params.break-glass-annotation)
+        - name: alert-body
+          value: $(params.alert-body)
       runAfter:
         - clone-playbooks
       taskRef:
@@ -134,7 +143,8 @@ spec:
           value: playbooks
         - name: args
           value: 
-            - '-p test.yaml' 
+            - '-p'
+            - 'test.yaml' 
       runAfter:
         - write-alert
       taskRef:

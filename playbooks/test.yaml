@@ -1,6 +1,7 @@
 - hosts: localhost
   connection: local
   tasks:
+    - debug: var=alert_body
     - name: Check existence of ticket
       jira:
         uri: '{{ jira_uri }}'
@@ -13,19 +14,23 @@
     - name: Show issue
       debug:
         msg: "{{ issue }}"
-    - name: Resolve Alert
-      uri:
-        url: "https://{{ acs_endpoint }}/v1/alerts/{{ alert_id }}/resolve"
-        body: '{"id":"{{ alert_id }}","whitelist":false,"addToBaseline":false}'
-        method: PATCH
-        headers:
-          Content-Type: "application/json"
-          Authorization: "Bearer {{ acs_api_token }}"
-        body_format: json
-        force_basic_auth: true
-        validate_certs: no
+    - set_fact: ticket_valid="false"
+    - name: Set fact if ticket is valid
+      set_fact: ticket_valid="true"
       when: 
         - issue.meta.fields.issuetype.name == "Exception"
         - issue.meta.fields.status.name == "In Progress"
+    - name: Add comment to ticket
+      jira:
+        uri: '{{ jira_uri }}'
+        username: '{{ jira_user }}'
+        password: '{{ jira_pass }}'
+        project: '{{ break_glass_annotation.split("-")[0] | upper }}'
+        operation: comment
+        comment: "Exception used by {{ deployment.namespace }}/{{ deployment.deployment }} at {{ now() }}"
+        issue: '{{ break_glass_annotation }}'
+      when: ticket_valid="true"
 
-         
+    # - name: Scale down unauthorized deployment
+    #   kubernetes:
+        

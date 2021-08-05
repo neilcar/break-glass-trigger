@@ -6,11 +6,11 @@ metadata:
 spec:
   triggers:
     - name: breakglass-listener
-      # interceptors:
-      #   - cel:
-      #       overlays:
-      #       - key: extensions.alertbody
-      #         expression: "body.marshalJSON()"
+      interceptors:
+        - cel:
+            overlays:
+            - key: alert-body
+              expression: "body.alert.marshalJSON()"
       bindings:
         - ref: breakglass-ticket-create-binding
       template:
@@ -40,7 +40,8 @@ spec:
       value: $(body.alert.id)
     - name: break-glass-annotation
       value: $(body.alert.deployment.annotations.admission\.stackrox\.io/break-glass)
-    - name: 
+    - name: alert-body
+      value: $(extensions.alert-body)
 
 ---
 apiVersion: triggers.tekton.dev/v1alpha1
@@ -53,6 +54,7 @@ spec:
   params:
     - name: alertId
     - name: break-glass-annotation
+    - name: alert-body
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
@@ -66,6 +68,8 @@ spec:
           value: "$(tt.params.alertId)"
         - name: break-glass-annotation
           value: "$(tt.params.break-glass-annotation)"
+        - name: alert-body
+          value: "$(tt.params.alert-body"
         workspaces:
         - name: files
           volumeClaimTemplate:
