@@ -19,11 +19,13 @@
         issue: '{{ alert.deployment.annotations["admission.stackrox.io/break-glass"] }}'
       register: issue
 
-    - set_fact: ticket_valid="false"
+    - set_fact: 
+        ticket_valid: "false"
 # default state unless the ticket is actually valid
 
     - name: Set fact if ticket is valid
-      set_fact: ticket_valid="true"
+      set_fact: 
+        ticket_valid: "true"
       when: 
         - issue.meta.fields.issuetype.name == "Exception"
         - issue.meta.fields.status.name == "In Progress"
@@ -37,7 +39,7 @@
         operation: comment
         comment: "Exception used by {{ alert.deployment.namespace }}/{{ dalert.eployment.deployment }} at {{ now() }}"
         issue: '{{ alert.deployment.annotations["admission.stackrox.io/break-glass"]}}'
-      when: ticket_valid=="true"
+      when: ticket_valid == "true"
 
     - name: Scale down unauthorized deployment
       k8s_scale:
@@ -46,5 +48,5 @@
         namespace: '{{ alert.deployment.namespace }}'
         name: '{{ alert.deployment.name }}'
         replicas: 0
-      when: ticket_valid=="false"
+      when: ticket_valid == "false"
         
