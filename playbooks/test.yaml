@@ -4,6 +4,8 @@
 
     - debug: var=alert_body
 
+    - debug: var=alert_body.deployment
+
     - name: Check existence of ticket
       jira:
         uri: '{{ jira_uri }}'
