@@ -1,19 +1,22 @@
 - hosts: localhost
   connection: local
+  vars:
+    alert: {{ alert_body | from_json }}
   tasks:
 
-    - debug: var=alert_body
 
-    - debug: var=alert_body.deployment
+    - debug: var=alert
+
+    - debug: var=alert.deployment
 
     - name: Check existence of ticket
       jira:
         uri: '{{ jira_uri }}'
         username: '{{ jira_user }}'
         password: '{{ jira_pass }}'
-        project: '{{ alert_body.deployment.annotations["admission.stackrox.io/break-glass"].split("-")[0] | upper }}'
+        project: '{{ alert.deployment.annotations["admission.stackrox.io/break-glass"].split("-")[0] | upper }}'
         operation: fetch
-        issue: '{{ alert_body.deployment.annotations["admission.stackrox.io/break-glass"] }}'
+        issue: '{{ alert.deployment.annotations["admission.stackrox.io/break-glass"] }}'
       register: issue
 
     - set_fact: ticket_valid="false"
@@ -30,18 +33,18 @@
         uri: '{{ jira_uri }}'
         username: '{{ jira_user }}'
         password: '{{ jira_pass }}'
-        project: '{{ alert_body.deployment.annotations["admission.stackrox.io/break-glass"].split("-")[0] | upper }}'
+        project: '{{ alert.deployment.annotations["admission.stackrox.io/break-glass"].split("-")[0] | upper }}'
         operation: comment
-        comment: "Exception used by {{ alert_body.deployment.namespace }}/{{ dalert_body.eployment.deployment }} at {{ now() }}"
-        issue: '{{ alert_body.deployment.annotations["admission.stackrox.io/break-glass"]}}'
+        comment: "Exception used by {{ alert.deployment.namespace }}/{{ dalert.eployment.deployment }} at {{ now() }}"
+        issue: '{{ alert.deployment.annotations["admission.stackrox.io/break-glass"]}}'
       when: ticket_valid=="true"
 
     - name: Scale down unauthorized deployment
       k8s_scale:
         api_version: v1
-        kind: '{{ alert_body.deployment.type }}'
-        namespace: '{{ alert_body.deployment.namespace }}'
-        name: '{{ alert_body.deployment.name }}'
+        kind: '{{ alert.deployment.type }}'
+        namespace: '{{ alert.deployment.namespace }}'
+        name: '{{ alert.deployment.name }}'
         replicas: 0
       when: ticket_valid=="false"
         
