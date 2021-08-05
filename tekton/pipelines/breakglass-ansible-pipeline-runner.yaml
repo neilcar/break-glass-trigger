@@ -1,38 +1,18 @@
 ---
-apiVersion: v1
-kind: ServiceAccount
+# Task to cleanup shared workspace
+apiVersion: tekton.dev/v1beta1
+kind: Task
 metadata:
-  name: ansible-deployer-account
----
-kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: ansible-deployer
-rules:
-  # Core API
-  - apiGroups: ['']
-    resources: ['services', 'pods', 'deployments', 'configmaps', 'secrets']
-    verbs: ['get', 'list', 'create', 'update', 'delete', 'patch', 'watch']
-  # Apps API
-  - apiGroups: ['apps']
-    resources: ['deployments', 'daemonsets', 'jobs']
-    verbs: ['get', 'list', 'create', 'update', 'delete', 'patch', 'watch']
-  # Knative API
-  - apiGroups: ['serving.knative.dev']
-    resources: ['services', 'revisions', 'routes']
-    verbs: ['get', 'list', 'create', 'update', 'delete', 'patch', 'watch']
----
-apiVersion: rbac.authorization.k8s.io/v1beta1
-kind: ClusterRoleBinding
-metadata:
-  name: ansible-deployer-binding
-subjects:
-  - kind: ServiceAccount
-    name: ansible-deployer-account
-roleRef:
-  kind: ClusterRole
-  name: ansible-deployer
-  apiGroup: rbac.authorization.k8s.io
+  name: cleanup-workspace
+spec:
+  workspaces:
+    # Shared workspace where git repo is cloned
+    - name: source
+  steps:
+    - name: cleanup-workspace
+      image: centos
+      script: |
+        rm -rf $(workspaces.source.path)/*
 ---
 apiVersion: tekton.dev/v1beta1
 kind: Task
@@ -40,12 +20,6 @@ metadata:
   name: write-alert-file
 spec:
   params:
-    - description: Alert Id
-      name: alertId
-      type: string
-    - description: Break Glass Annotation
-      name: break-glass-annotation
-      type: string
     - description: Alert body
       name: alert-body
       type: string    
@@ -65,17 +39,7 @@ spec:
           valueFrom:
             secretKeyRef:
               key: token
-              name: jira-api-token
-        - name: ROX_ENDPOINT
-          valueFrom:
-            secretKeyRef:
-              key: central_endpoint
-              name: acs-access-token
-        - name: ROX_API_TOKEN
-          valueFrom:
-            secretKeyRef:
-              key: token
-              name: acs-access-token              
+              name: jira-api-token         
       image: centos
       name: write-alert
       resources: {}
@@ -84,14 +48,10 @@ spec:
         mkdir /runner-dir/playbooks/env
         cat <<EOF > /runner-dir/playbooks/env/extravars
         {
-          "alert_id": "$(params.alertId)",
-          "break_glass_annotation": "$(params.break-glass-annotation)",
           "alert_body": '$(params.alert-body)',
           "jira_uri": "${JIRA_ADDR}",
           "jira_user": "${JIRA_USER}",
-          "jira_pass": "${JIRA_PASS}",
-          "acs_endpoint": "${ROX_ENDPOINT}",
-          "acs_api_token": "${ROX_API_TOKEN}"
+          "jira_pass": "${JIRA_PASS}"
         }
         EOF
   workspaces:
@@ -107,12 +67,6 @@ metadata:
 spec:
   description: Run playbook to check breakglass annotation
   params:
-    - description: Alert Id
-      name: alertId
-      type: string
-    - description: Break Glass Annotation
-      name: break-glass-annotation
-      type: string
     - description: Alert Body
       name: alert-body
       type: string
@@ -131,10 +85,6 @@ spec:
           workspace: files
     - name: write-alert
       params:
-        - name: alertId
-          value: $(params.alertId)
-        - name: break-glass-annotation
-          value: $(params.break-glass-annotation)
         - name: alert-body
           value: $(params.alert-body)
       runAfter:
@@ -161,5 +111,13 @@ spec:
       workspaces:
         - name: runner-dir
           workspace: files
+  finally:
+    # Cleanup workspace
+    - name: cleanup
+      taskRef:
+        name: cleanup-workspace
+      workspaces:
+        - name: source
+          workspace: files      
   workspaces:
     - name: files
