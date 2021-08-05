@@ -41,7 +41,7 @@
         operation: comment
         comment: "Exception used by {{ alert.deployment.namespace }}/{{ dalert.eployment.deployment }} at {{ now() }}"
         issue: '{{ alert.deployment.annotations["admission.stackrox.io/break-glass"]}}'
-      when: ticket_valid == "true"
+      when: ticket_valid == true
 
     - name: Scale down unauthorized deployment
       k8s_scale:
@@ -50,5 +50,5 @@
         namespace: '{{ alert.deployment.namespace }}'
         name: '{{ alert.deployment.name }}'
         replicas: 0
-      when: ticket_valid == "false"
+      when: ticket_valid == false
         
