@@ -1,0 +1,52 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: discover-processor
+  namespace: payments
+  labels:
+    app: discover-processor
+  annotations:
+    "admission.stackrox.io/break-glass": "ABCD-2"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: discover-processor
+  template:
+    metadata:
+      labels:
+        app: discover-processor
+    spec:
+      imagePullSecrets:
+        - name: gcrcred
+      serviceAccountName: visa-processor
+      volumes:
+        - name: ssh-keys
+          secret:
+            secretName: ssh-keys
+      containers:
+        - image: gcr.io/rox-se/struts-violations/visa-processor:latest-v2
+          imagePullPolicy: Always
+          name: discover-processor
+          ports:
+            - containerPort: 22
+              protocol: TCP
+            - containerPort: 8080
+              protocol: TCP
+          volumeMounts:
+            - name: ssh-keys
+              mountPath: "/root/.ssh"
+              readOnly: false
+          securityContext:
+            capabilities:
+              add: ["SYS_ADMIN"]
+          env:
+            - name: I_HAVE_A_SECRET
+              value: "true"
+        - image: gcr.io/rox-se/srox/visa-processor:sidecar-latest-v2
+          imagePullPolicy: Always
+          name: discover-processor-sidecar
+          command: ["/bin/entrypoint"]
+          securityContext:
+            privileged: true

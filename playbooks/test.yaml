@@ -60,6 +60,6 @@
         project: SEC
         operation: create
         summary: Unauthorized deployment exception {{ alert.deployment.namespace }}/{{ alert.deployment.name }}
-        description: Please investigate.  Deployment has been scaled to 0.
+        description: Please investigate.  Deployment has been scaled to 0. \n {{ alert }}
         issuetype: Task
       when: ticket_valid == false

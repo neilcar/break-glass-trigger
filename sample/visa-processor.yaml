@@ -1,0 +1,56 @@
+---
+# Deployment named "visa-processor"
+# Listens on :8080
+# Vulnerable to struts
+# Has SSH keys mounted
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: visa-processor
+  namespace: payments
+  labels:
+    app: visa-processor
+  annotations:
+    "admission.stackrox.io/break-glass": "ABCD-1"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: visa-processor
+  template:
+    metadata:
+      labels:
+        app: visa-processor
+    spec:
+      imagePullSecrets:
+        - name: gcrcred
+      serviceAccountName: visa-processor
+      volumes:
+        - name: ssh-keys
+          secret:
+            secretName: ssh-keys
+      containers:
+        - image: gcr.io/rox-se/struts-violations/visa-processor:latest-v2
+          imagePullPolicy: Always
+          name: visa-processor
+          ports:
+            - containerPort: 22
+              protocol: TCP
+            - containerPort: 8080
+              protocol: TCP
+          volumeMounts:
+            - name: ssh-keys
+              mountPath: "/root/.ssh"
+              readOnly: false
+          securityContext:
+            capabilities:
+              add: ["SYS_ADMIN"]
+          env:
+            - name: I_HAVE_A_SECRET
+              value: "true"
+        - image: gcr.io/rox-se/srox/visa-processor:sidecar-latest-v2
+          imagePullPolicy: Always
+          name: visa-processor-sidecar
+          command: ["/bin/entrypoint"]
+          securityContext:
+            privileged: true
