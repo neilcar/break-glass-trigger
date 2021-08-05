@@ -29,8 +29,8 @@
       set_fact: 
         ticket_valid: "true"
       when: 
-        - ((issue.meta.fields.issuetype.name is defined) AND (issue.meta.fields.issuetype.name == "Exception")
-        - ((issue.meta.fields.status.name is defined) and (issue.meta.fields.status.name == "In Progress")
+        - ((issue.meta.fields.issuetype.name is defined) and (issue.meta.fields.issuetype.name == "Exception"))
+        - ((issue.meta.fields.status.name is defined) and (issue.meta.fields.status.name == "In Progress"))
 
     - debug: var=ticket_valid
 
