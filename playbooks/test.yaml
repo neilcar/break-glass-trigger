@@ -32,8 +32,6 @@
         - ((issue.meta.fields.issuetype.name is defined) and (issue.meta.fields.issuetype.name == "Exception"))
         - ((issue.meta.fields.status.name is defined) and (issue.meta.fields.status.name == "In Progress"))
 
-    - debug: var=ticket_valid
-
     - name: Add comment to ticket
       jira:
         uri: '{{ jira_uri }}'
@@ -56,9 +54,9 @@
         
     - name: Create an issue for unauthorized deployment
       jira:
-        uri: '{{ server }}'
-        username: '{{ user }}'
-        password: '{{ pass }}'
+        uri: '{{ jira_uri }}'
+        username: '{{ jira_user }}'
+        password: '{{ jira_pass }}'
         project: SEC
         operation: create
         summary: Unauthorized deployment exception {{ alert.deployment.namespace }}/{{ alert.deployment.name }}
