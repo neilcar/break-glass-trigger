@@ -30,6 +30,8 @@
         - issue.meta.fields.issuetype.name == "Exception"
         - issue.meta.fields.status.name == "In Progress"
 
+    - debug: var=ticket_valid
+
     - name: Add comment to ticket
       jira:
         uri: '{{ jira_uri }}'
