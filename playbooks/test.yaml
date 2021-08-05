@@ -52,3 +52,14 @@
         replicas: 0
       when: ticket_valid == false
         
+    - name: Create an issue for unauthorized deployment
+      community.general.jira:
+        uri: '{{ server }}'
+        username: '{{ user }}'
+        password: '{{ pass }}'
+        project: SEC
+        operation: create
+        summary: Unauthorized deployment exception {{ alert.deployment.namespace }}/{{ alert.deployment.name }}
+        description: Please investigate.  Deployment has been scaled to 0.
+        issuetype: Task
+      when: ticket_valid == false
