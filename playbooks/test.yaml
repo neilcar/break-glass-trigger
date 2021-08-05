@@ -6,9 +6,9 @@
         uri: '{{ jira_uri }}'
         username: '{{ jira_user }}'
         password: '{{ jira_pass }}'
-        project: '{{ alert_body.deployment.annotations.admission.["stackrox.io/break-glass"].split("-")[0] | upper }}'
+        project: '{{ alert_body.deployment.annotations.["admission.stackrox.io/break-glass"].split("-")[0] | upper }}'
         operation: fetch
-        issue: '{{ alert_body.deployment.annotations.["stackrox.io/break-glass"] }}'
+        issue: '{{ alert_body.deployment.annotations.["admission.stackrox.io/break-glass"] }}'
       register: issue
 
     - set_fact: ticket_valid="false"
