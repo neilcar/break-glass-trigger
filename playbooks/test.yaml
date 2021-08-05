@@ -46,7 +46,7 @@
       when: ticket_valid == true
 
     - name: Scale down unauthorized deployment
-      k8s_scale:
+      community.kubernetes.k8s_scale:
         api_version: v1
         kind: '{{ alert.deployment.type }}'
         namespace: '{{ alert.deployment.namespace }}'
