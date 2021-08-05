@@ -18,6 +18,8 @@
         operation: fetch
         issue: '{{ alert.deployment.annotations["admission.stackrox.io/break-glass"] }}'
       register: issue
+      # It's OK if we get an error if ticket doesn't exist.
+      ignore_errors: yes
 
     - set_fact: 
         ticket_valid: "false"
