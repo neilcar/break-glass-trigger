@@ -146,7 +146,6 @@ spec:
         - name: runner-dir
           workspace: files
     - name: breakglass-ansible-runner
-      serviceaccount: ansible-deployer-account
       params:
         - name: project-dir
           value: playbooks
