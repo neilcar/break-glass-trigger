@@ -39,7 +39,7 @@
         password: '{{ jira_pass }}'
         project: '{{ alert.deployment.annotations["admission.stackrox.io/break-glass"].split("-")[0] | upper }}'
         operation: comment
-        comment: "Exception used by {{ alert.deployment.namespace }}/{{ alert.eployment.deployment }} at {{ now() }}"
+        comment: "Exception used by {{ alert.deployment.namespace }}/{{ alert.deployment.name }} at {{ now() }}"
         issue: '{{ alert.deployment.annotations["admission.stackrox.io/break-glass"]}}'
       when: ticket_valid == true
 
