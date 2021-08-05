@@ -47,8 +47,6 @@ spec:
 apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerTemplate
 metadata:
-  annotations:
-    triggers.tekton.dev/old-escape-quotes: "true"
   name: breakglass-ticket-check
 spec:
   params:
@@ -69,7 +67,7 @@ spec:
         - name: break-glass-annotation
           value: "$(tt.params.break-glass-annotation)"
         - name: alert-body
-          value: "$(tt.params.alert-body"
+          value: "$(tt.params.alert-body)"
         workspaces:
         - name: files
           volumeClaimTemplate:

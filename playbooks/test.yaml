@@ -1,25 +1,25 @@
 - hosts: localhost
   connection: local
   tasks:
-    - debug: var=alert_body
     - name: Check existence of ticket
       jira:
         uri: '{{ jira_uri }}'
         username: '{{ jira_user }}'
         password: '{{ jira_pass }}'
-        project: '{{ break_glass_annotation.split("-")[0] | upper }}'
+        project: '{{ alert_body.deployment.annotations.admission\.stackrox\.io/break-glass.split("-")[0] | upper }}'
         operation: fetch
-        issue: '{{ break_glass_annotation }}'
+        issue: '{{ alert_body.deployment.annotations.admission\.stackrox\.io/break-glass }}'
       register: issue
-    - name: Show issue
-      debug:
-        msg: "{{ issue }}"
+
     - set_fact: ticket_valid="false"
+# default state unless the ticket is actually valid
+
     - name: Set fact if ticket is valid
       set_fact: ticket_valid="true"
       when: 
         - issue.meta.fields.issuetype.name == "Exception"
         - issue.meta.fields.status.name == "In Progress"
+
     - name: Add comment to ticket
       jira:
         uri: '{{ jira_uri }}'
@@ -29,8 +29,14 @@
         operation: comment
         comment: "Exception used by {{ deployment.namespace }}/{{ deployment.deployment }} at {{ now() }}"
         issue: '{{ break_glass_annotation }}'
-      when: ticket_valid="true"
+      when: ticket_valid=="true"
 
-    # - name: Scale down unauthorized deployment
-    #   kubernetes:
+    - name: Scale down unauthorized deployment
+      k8s_scale:
+        api_version: v1
+        kind: '{{ alert_body.deployment.type }}'
+        namespace: '{{ alert_body.deployment.namespace }}'
+        name: '{{ alert_body.deployment.name }}'
+        replicas: 0
+      when: ticket_valid=="false"
         
