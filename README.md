@@ -51,7 +51,7 @@ Next, apply the service account, trigger, and tasks/pipelines for our project:
 ```
 oc apply --filename https://raw.githubusercontent.com/neilcar/break-glass-trigger/main/tekton/triggers/ansible-deployer-service-account.yaml
 oc apply --filename https://raw.githubusercontent.com/neilcar/break-glass-trigger/main/tekton/triggers/breakglass-trigger.yaml
-oc apply --filename https://github.com/neilcar/break-glass-trigger/blob/main/tekton/pipelines/breakglass-ansible-pipeline-runner.yaml
+oc apply --filename https://raw.githubusercontent.com/neilcar/break-glass-trigger/main/tekton/pipelines/breakglass-ansible-pipeline-runner.yaml
 ```
 
 ### ACS
