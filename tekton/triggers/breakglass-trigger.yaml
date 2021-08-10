@@ -36,10 +36,6 @@ metadata:
   name: breakglass-ticket-create-binding
 spec:
   params:
-    - name: alertId
-      value: $(body.alert.id)
-    - name: break-glass-annotation
-      value: $(body.alert.deployment.annotations.admission\.stackrox\.io/break-glass)
     - name: alert-body
       value: $(extensions.alert-body)
 
@@ -50,8 +46,6 @@ metadata:
   name: breakglass-ticket-check
 spec:
   params:
-    - name: alertId
-    - name: break-glass-annotation
     - name: alert-body
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
@@ -59,14 +53,10 @@ spec:
       metadata:
         generateName: breakglass-ticket-check-
       spec:
-        serviceAccountName: ansible-deployer-sa
+        serviceAccountName: pipeline
         pipelineRef:
           name: breakglass-ansible-pipeline-runner
         params:
-        - name: alertId
-          value: "$(tt.params.alertId)"
-        - name: break-glass-annotation
-          value: "$(tt.params.break-glass-annotation)"
         - name: alert-body
           value: "$(tt.params.alert-body)"
         workspaces:
