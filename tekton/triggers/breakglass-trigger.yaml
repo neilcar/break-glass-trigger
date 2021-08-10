@@ -59,7 +59,7 @@ spec:
       metadata:
         generateName: breakglass-ticket-check-
       spec:
-        serviceAccountName: ansible-deployer
+        serviceAccountName: ansible-deployer-sa
         pipelineRef:
           name: breakglass-ansible-pipeline-runner
         params:
