@@ -102,7 +102,7 @@ spec:
         - name: args
           value: 
             - '-p'
-            - 'test.yaml' 
+            - 'break-glass-trigger.yaml' 
       runAfter:
         - write-alert
       taskRef:
