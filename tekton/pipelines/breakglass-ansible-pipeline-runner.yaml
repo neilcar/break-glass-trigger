@@ -73,7 +73,7 @@ spec:
   tasks:
     - name: clone-playbooks
       taskRef:
-        kind: Task
+        kind: ClusterTask
         name: git-clone
       params:
         - name: url
